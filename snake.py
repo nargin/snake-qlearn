@@ -89,8 +89,8 @@ def print_vision(state, action=None):
     left_vision = state["left"]
     right_vision = state["right"]
 
-    # Build the cross pattern as shown in PDF
-    print()  # Empty line before vision
+    # Build the cross vision
+    print()  # Empty line
 
     # Print up vision (each character on its own line)
     for char in up_vision:
@@ -232,7 +232,6 @@ def run_training(args):
         all_durations.append(env.steps)
 
         # Print session summary
-        # if args.verbose or session == args.sessions or session % 100 == 0:
         reward_colored = colorize_reward(session_reward)
         print(
             f"Session {session}/{args.sessions}: "
