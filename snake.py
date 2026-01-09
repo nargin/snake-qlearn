@@ -9,6 +9,7 @@ import os
 # Import display only if needed
 try:
     import pygame
+
     pygame.init()
     pygame.display.set_mode((1, 1))
     pygame.quit()
@@ -18,9 +19,9 @@ except (ImportError, pygame.error):
 
 
 # ANSI color codes for terminal output
-COLOR_RED = '\033[91m'
-COLOR_GREEN = '\033[92m'
-COLOR_RESET = '\033[0m'
+COLOR_RED = "\033[91m"
+COLOR_GREEN = "\033[92m"
+COLOR_RESET = "\033[0m"
 
 
 def colorize_reward(reward):
@@ -36,7 +37,6 @@ def colorize_reward(reward):
         return f"{COLOR_RED}{reward:.1f}{COLOR_RESET}"
     else:
         return f"{COLOR_GREEN}{reward:.1f}{COLOR_RESET}"
-    Display = None
 
 
 def get_safe_actions(env, state):
@@ -65,9 +65,9 @@ def get_safe_actions(env, state):
 
         # Check if safe (not wall, not snake body)
         is_safe = (
-            0 <= next_pos[0] < env.board_size and
-            0 <= next_pos[1] < env.board_size and
-            next_pos not in env.snake
+            0 <= next_pos[0] < env.board_size
+            and 0 <= next_pos[1] < env.board_size
+            and next_pos not in env.snake
         )
 
         if is_safe:
@@ -84,22 +84,32 @@ def print_vision(state, action=None):
         action: Optional action taken
     """
     # Create the vision display
-    up_vision = state['up']
-    down_vision = state['down']
-    left_vision = state['left']
-    right_vision = state['right']
+    up_vision = state["up"]
+    down_vision = state["down"]
+    left_vision = state["left"]
+    right_vision = state["right"]
 
-    # Build the cross pattern
-    print("\n" + up_vision)
-    print(left_vision + 'H' + right_vision)
-    print(down_vision)
+    # Build the cross pattern as shown in PDF
+    print()  # Empty line before vision
 
+    # Print up vision (each character on its own line)
+    for char in up_vision:
+        print(" " * len(left_vision) + char)
+
+    # Print left + H + right vision (all on one line)
+    print(left_vision + "H" + right_vision)
+
+    # Print down vision (each character on its own line)
+    for char in down_vision:
+        print(" " * len(left_vision) + char)
+
+    # Print action if provided
     if action:
         action_names = {
-            Direction.UP: 'UP',
-            Direction.DOWN: 'DOWN',
-            Direction.LEFT: 'LEFT',
-            Direction.RIGHT: 'RIGHT'
+            Direction.UP: "UP",
+            Direction.DOWN: "DOWN",
+            Direction.LEFT: "LEFT",
+            Direction.RIGHT: "RIGHT",
         }
         print(f"\n{action_names[action]}")
     print()
@@ -118,7 +128,7 @@ def run_training(args):
         discount_factor=args.gamma,
         epsilon=args.epsilon,
         epsilon_decay=args.epsilon_decay,
-        epsilon_min=args.epsilon_min
+        epsilon_min=args.epsilon_min,
     )
 
     # Load model if specified
@@ -126,7 +136,7 @@ def run_training(args):
         # Auto-prepend models/ if just filename given
         load_path = args.load
         if not os.path.dirname(load_path):  # No directory in path
-            load_path = os.path.join('models', load_path)
+            load_path = os.path.join("models", load_path)
 
         if os.path.exists(load_path):
             print(f"Load trained model from {load_path}")
@@ -137,18 +147,18 @@ def run_training(args):
     # Set learning mode
     if args.dontlearn:
         agent.set_learning_enabled(False)
-        print(f"Learning disabled - pure exploitation mode (revisit penalty prevents loops)")
+        print("Learning disabled - pure exploitation mode")
     else:
         # Print hyperparameters
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Q-Learning Hyperparameters:")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         print(f"  Learning Rate (α): {args.lr}")
         print(f"  Discount Factor (γ): {args.gamma}")
         print(f"  Epsilon Start: {args.epsilon}")
         print(f"  Epsilon Decay: {args.epsilon_decay}")
         print(f"  Epsilon Min: {args.epsilon_min}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
     # Create display if visual mode
     display = None
@@ -162,13 +172,13 @@ def run_training(args):
     # Determine FPS
     fps = 0
     if args.visual and not args.step_by_step:
-        if args.speed == 'slow':
+        if args.speed == "slow":
             fps = 2
-        elif args.speed == 'medium':
+        elif args.speed == "medium":
             fps = 10
-        elif args.speed == 'fast':
+        elif args.speed == "fast":
             fps = 30
-        elif args.speed == 'ultrafast':
+        elif args.speed == "ultrafast":
             fps = 60
 
     # Training loop
@@ -192,8 +202,8 @@ def run_training(args):
             # Get action from agent (only from safe actions)
             action = agent.get_action(state, safe_actions)
 
-            # Show state in terminal if visual mode
-            if args.visual and args.verbose:
+            # Show state in terminal if verbose mode
+            if args.verbose:
                 print_vision(state, action)
 
             # Take step in environment
@@ -224,31 +234,42 @@ def run_training(args):
         # Print session summary
         # if args.verbose or session == args.sessions or session % 100 == 0:
         reward_colored = colorize_reward(session_reward)
-        print(f"Session {session}/{args.sessions}: "
-                f"Length={env.max_length}, "
-                f"Steps={env.steps}, "
-                f"Reward={reward_colored}, "
-                f"Epsilon={agent.epsilon:.3f}")
+        print(
+            f"Session {session}/{args.sessions}: "
+            f"Length={env.max_length}, "
+            f"Steps={env.steps}, "
+            f"Reward={reward_colored}, "
+            f"Epsilon={agent.epsilon:.3f}"
+        )
 
     # Final statistics
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Training Complete!")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Board size: {args.board_size}x{args.board_size}")
     print(f"Total sessions: {args.sessions}")
-    print(f"Average max length: {sum(all_max_lengths) / len(all_max_lengths):.2f}")
+    print(
+        f"Average max length: {
+            sum(all_max_lengths) /
+            len(all_max_lengths):.2f}")
     print(f"Best max length: {max(all_max_lengths)}")
     print(f"Average duration: {sum(all_durations) / len(all_durations):.2f}")
     print(f"States explored: {agent.get_stats()['states_explored']}")
     print(f"Final epsilon: {agent.epsilon:.4f}")
 
     # Bonus achievements
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("BONUS ACHIEVEMENTS:")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     best = max(all_max_lengths)
-    bonus_levels = [(35, "LEGENDARY"), (30, "MASTER"), (25, "EXPERT"),
-                    (20, "ADVANCED"), (15, "PROFICIENT"), (10, "COMPETENT")]
+    bonus_levels = [
+        (35, "LEGENDARY"),
+        (30, "MASTER"),
+        (25, "EXPERT"),
+        (20, "ADVANCED"),
+        (15, "PROFICIENT"),
+        (10, "COMPETENT"),
+    ]
     for level, rank in bonus_levels:
         if best >= level:
             print(f"✓ Length {level}+ achieved! Rank: {rank}")
@@ -257,15 +278,18 @@ def run_training(args):
         print(f"  Current best: {best} (Goal: 10+)")
 
     if args.load:
-        print(f"✓ Model transfer: Trained model works on {args.board_size}x{args.board_size} board")
-    print(f"{'='*60}")
+        print(
+            f"✓ Model transfer: Trained model works on {
+                args.board_size}x{
+                args.board_size} board")
+    print(f"{'=' * 60}")
 
     # Save model if specified
     if args.save:
         # Auto-prepend models/ if just filename given
         save_path = args.save
         if not os.path.dirname(save_path):  # No directory in path
-            save_path = os.path.join('models', save_path)
+            save_path = os.path.join("models", save_path)
 
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         agent.save_model(save_path)
@@ -279,108 +303,101 @@ def run_training(args):
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description='Learn2Slither - Snake with Q-Learning'
+        description="Learn2Slither - Snake with Q-Learning"
     )
 
     # Required/Common arguments
     parser.add_argument(
-        '-sessions',
+        "-sessions",
         type=int,
         default=1,
-        help='Number of training sessions to run (default: 1)'
+        help="Number of training sessions to run (default: 1)",
     )
 
     # Model arguments
     parser.add_argument(
-        '-save',
+        "-save",
         type=str,
-        help='Path to save the trained model'
-    )
+        help="Path to save the trained model")
     parser.add_argument(
-        '-load',
+        "-load",
         type=str,
-        help='Path to load a pre-trained model'
-    )
+        help="Path to load a pre-trained model")
 
     # Display arguments
     parser.add_argument(
-        '-visual',
+        "-visual",
         type=str,
-        choices=['on', 'off'],
-        default='on',
-        help='Enable/disable visual display (default: on)'
+        choices=["on", "off"],
+        default="on",
+        help="Enable/disable visual display (default: on)",
     )
     parser.add_argument(
-        '-speed',
+        "-speed",
         type=str,
-        choices=['slow', 'medium', 'fast', 'ultrafast'],
-        default='medium',
-        help='Display speed (default: medium)'
+        choices=["slow", "medium", "fast", "ultrafast"],
+        default="medium",
+        help="Display speed (default: medium)",
     )
     parser.add_argument(
-        '-step-by-step',
-        action='store_true',
-        help='Enable step-by-step mode (press space to advance)'
+        "-step-by-step",
+        action="store_true",
+        help="Enable step-by-step mode (press space to advance)",
     )
 
     # Learning arguments
     parser.add_argument(
-        '-dontlearn',
-        action='store_true',
-        help='Disable learning (evaluation mode)'
-    )
+        "-dontlearn",
+        action="store_true",
+        help="Disable learning (evaluation mode)")
 
     # Q-Learning hyperparameters
     parser.add_argument(
-        '-lr',
+        "-lr",
         type=float,
         default=0.2,
-        help='Learning rate (alpha) (default: 0.2)'
-    )
+        help="Learning rate (alpha) (default: 0.2)")
     parser.add_argument(
-        '-gamma',
+        "-gamma",
         type=float,
         default=0.9,
-        help='Discount factor (gamma) (default: 0.9)'
-    )
+        help="Discount factor (gamma) (default: 0.9)")
     parser.add_argument(
-        '-epsilon',
+        "-epsilon",
         type=float,
         default=1.0,
-        help='Initial exploration rate (default: 1.0)'
+        help="Initial exploration rate (default: 1.0)",
     )
     parser.add_argument(
-        '-epsilon_decay',
+        "-epsilon_decay",
         type=float,
         default=0.999,
-        help='Epsilon decay rate (default: 0.999)'
+        help="Epsilon decay rate (default: 0.999)",
     )
     parser.add_argument(
-        '-epsilon_min',
+        "-epsilon_min",
         type=float,
         default=0.05,
-        help='Minimum epsilon value (default: 0.05)'
+        help="Minimum epsilon value (default: 0.05)",
     )
 
     # Board arguments
     parser.add_argument(
-        '-board_size',
+        "-board_size",
         type=int,
         default=10,
-        help='Size of the board (default: 10)'
-    )
+        help="Size of the board (default: 10)")
 
     # Verbose output
     parser.add_argument(
-        '-verbose',
-        action='store_true',
-        help='Print state/vision during training'
-    )
+        "-verbose",
+        action="store_true",
+        help="Print state/vision during training")
 
     args = parser.parse_args()
 
     # Convert visual string to boolean
-    args.visual = args.visual == 'on'
+    args.visual = args.visual == "on"
 
     # Run training
     try:
@@ -390,7 +407,7 @@ def main():
         sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # If no arguments provided, launch graphical menu
     if len(sys.argv) == 1:
         try:

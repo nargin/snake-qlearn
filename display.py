@@ -17,7 +17,7 @@ class Display:
 
         pygame.init()
         self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption('Learn2Slither - Snake Game')
+        pygame.display.set_caption("Learn2Slither - Snake Game")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 24)
 
@@ -59,38 +59,39 @@ class Display:
                         x * self.cell_size,
                         y * self.cell_size,
                         self.cell_size,
-                        self.cell_size
+                        self.cell_size,
                     )
                     pygame.draw.rect(self.screen, (250, 250, 255), rect)
 
         # Draw grid lines
         for x in range(self.board_size + 1):
             pygame.draw.line(
-                self.screen, self.LIGHT_GRAY,
+                self.screen,
+                self.LIGHT_GRAY,
                 (x * self.cell_size, 0),
-                (x * self.cell_size, self.board_size * self.cell_size)
+                (x * self.cell_size, self.board_size * self.cell_size),
             )
         for y in range(self.board_size + 1):
             pygame.draw.line(
-                self.screen, self.LIGHT_GRAY,
+                self.screen,
+                self.LIGHT_GRAY,
                 (0, y * self.cell_size),
-                (self.board_size * self.cell_size, y * self.cell_size)
+                (self.board_size * self.cell_size, y * self.cell_size),
             )
 
         # Draw green apples
-        for apple in board_state['green_apples']:
+        for apple in board_state["green_apples"]:
             self._draw_circle(apple[0], apple[1], self.GREEN)
 
         # Draw red apple
-        if board_state['red_apple']:
+        if board_state["red_apple"]:
             self._draw_circle(
-                board_state['red_apple'][0],
-                board_state['red_apple'][1],
-                self.RED
-            )
+                board_state["red_apple"][0],
+                board_state["red_apple"][1],
+                self.RED)
 
         # Draw snake
-        snake = board_state['snake']
+        snake = board_state["snake"]
         if snake:
             # Draw head
             self._draw_rect(snake[0][0], snake[0][1], self.DARK_BLUE)
@@ -136,7 +137,7 @@ class Display:
         """
         center = (
             x * self.cell_size + self.cell_size // 2,
-            y * self.cell_size + self.cell_size // 2
+            y * self.cell_size + self.cell_size // 2,
         )
         radius = self.cell_size // 3
 
@@ -151,7 +152,11 @@ class Display:
         shine_color = tuple(min(c + 80, 255) for c in color)
         shine_center = (center[0] - radius // 3, center[1] - radius // 3)
         shine_radius = radius // 3
-        pygame.draw.circle(self.screen, shine_color, shine_center, shine_radius)
+        pygame.draw.circle(
+            self.screen,
+            shine_color,
+            shine_center,
+            shine_radius)
 
     def _draw_stats(self, board_state, session_num, total_sessions):
         """Draw statistics below the board
@@ -201,7 +206,8 @@ class Display:
                     pygame.quit()
                     sys.exit()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN:
+                    if (event.key == pygame.K_SPACE
+                            or event.key == pygame.K_RETURN):
                         waiting = False
 
     def close(self):

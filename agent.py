@@ -4,14 +4,21 @@ import random
 
 
 class QLearningAgent:
-    def __init__(self, learning_rate=0.2, discount_factor=0.9,
-                 epsilon=1.0, epsilon_decay=0.999, epsilon_min=0.05,
-                 eval_epsilon=0.0):
+    def __init__(
+        self,
+        learning_rate=0.2,
+        discount_factor=0.9,
+        epsilon=1.0,
+        epsilon_decay=0.999,
+        epsilon_min=0.05,
+        eval_epsilon=0.0,
+    ):
         """Initialize Q-Learning agent
 
         Args:
             learning_rate: Learning rate (alpha) - higher for faster learning
-            discount_factor: Discount factor (gamma) - lower for immediate rewards
+            discount_factor: Discount factor (gamma) - lower for
+                immediate rewards
             epsilon: Initial exploration rate
             epsilon_decay: Rate at which epsilon decays - slower decay
             epsilon_min: Minimum epsilon value - keep some exploration
@@ -36,7 +43,7 @@ class QLearningAgent:
             tuple: Hashable state representation using simplified features
         """
         # Use simplified features for much smaller state space
-        return state['features']
+        return state["features"]
 
     def get_action(self, state, safe_actions=None):
         """Get action using epsilon-greedy policy with safety
@@ -58,8 +65,11 @@ class QLearningAgent:
             available_actions = list(Direction)
 
         # Exploration: random action from available actions
-        # Use eval_epsilon when learning disabled to prevent deterministic loops
-        current_epsilon = self.epsilon if self.learning_enabled else self.eval_epsilon
+        # Use eval_epsilon when learning disabled to prevent deterministic
+        # loops
+        current_epsilon = (
+            self.epsilon if self.learning_enabled else self.eval_epsilon
+        )
         if random.random() < current_epsilon:
             return random.choice(available_actions)
 
@@ -73,8 +83,11 @@ class QLearningAgent:
                        for action in available_actions}
 
         max_q = max(available_q.values())
-        best_actions = [action for action, q in available_q.items()
-                        if q == max_q]
+        best_actions = [
+            action for action,
+            q in available_q.items()
+            if q == max_q
+        ]
         return random.choice(best_actions)
 
     def update(self, state, action, reward, next_state, done):
@@ -127,15 +140,15 @@ class QLearningAgent:
             filepath: Path to save file
         """
         model_data = {
-            'q_table': self.q_table,
-            'epsilon': self.epsilon,
-            'learning_rate': self.learning_rate,
-            'discount_factor': self.discount_factor,
-            'eval_epsilon': self.eval_epsilon,
-            'epsilon_decay': self.epsilon_decay,
-            'epsilon_min': self.epsilon_min
+            "q_table": self.q_table,
+            "epsilon": self.epsilon,
+            "learning_rate": self.learning_rate,
+            "discount_factor": self.discount_factor,
+            "eval_epsilon": self.eval_epsilon,
+            "epsilon_decay": self.epsilon_decay,
+            "epsilon_min": self.epsilon_min,
         }
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load_model(self, filepath):
@@ -144,16 +157,18 @@ class QLearningAgent:
         Args:
             filepath: Path to model file
         """
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
-        self.q_table = model_data['q_table']
-        self.epsilon = model_data.get('epsilon', self.epsilon)
-        self.learning_rate = model_data.get('learning_rate', self.learning_rate)
-        self.discount_factor = model_data.get('discount_factor',
-                                              self.discount_factor)
-        self.eval_epsilon = model_data.get('eval_epsilon', self.eval_epsilon)
-        self.epsilon_decay = model_data.get('epsilon_decay', self.epsilon_decay)
-        self.epsilon_min = model_data.get('epsilon_min', self.epsilon_min)
+        self.q_table = model_data["q_table"]
+        self.epsilon = model_data.get("epsilon", self.epsilon)
+        self.learning_rate = model_data.get(
+            "learning_rate", self.learning_rate)
+        self.discount_factor = model_data.get(
+            "discount_factor", self.discount_factor)
+        self.eval_epsilon = model_data.get("eval_epsilon", self.eval_epsilon)
+        self.epsilon_decay = model_data.get(
+            "epsilon_decay", self.epsilon_decay)
+        self.epsilon_min = model_data.get("epsilon_min", self.epsilon_min)
 
     def set_learning_enabled(self, enabled):
         """Enable or disable learning
@@ -170,7 +185,7 @@ class QLearningAgent:
             dict: Statistics about the agent
         """
         return {
-            'states_explored': len(self.q_table),
-            'epsilon': self.epsilon,
-            'learning_enabled': self.learning_enabled
+            "states_explored": len(self.q_table),
+            "epsilon": self.epsilon,
+            "learning_enabled": self.learning_enabled,
         }

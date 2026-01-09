@@ -10,12 +10,12 @@ class Direction(Enum):
 
 
 class CellType(Enum):
-    EMPTY = '0'
-    WALL = 'W'
-    SNAKE_HEAD = 'H'
-    SNAKE_BODY = 'S'
-    GREEN_APPLE = 'G'
-    RED_APPLE = 'R'
+    EMPTY = "0"
+    WALL = "W"
+    SNAKE_HEAD = "H"
+    SNAKE_BODY = "S"
+    GREEN_APPLE = "G"
+    RED_APPLE = "R"
 
 
 class Environment:
@@ -57,9 +57,9 @@ class Environment:
 
         # Place apples
         self.green_apples = []
-        self._place_apple('green')
-        self._place_apple('green')
-        self._place_apple('red')
+        self._place_apple("green")
+        self._place_apple("green")
+        self._place_apple("red")
 
         self.max_length = len(self.snake)
 
@@ -83,7 +83,7 @@ class Environment:
                 self.snake = [
                     (start_x, start_y),
                     (start_x - 1, start_y),
-                    (start_x - 2, start_y)
+                    (start_x - 2, start_y),
                 ]
                 self.direction = Direction.RIGHT
             else:
@@ -91,7 +91,7 @@ class Environment:
                 self.snake = [
                     (start_x, start_y),
                     (start_x, start_y - 1),
-                    (start_x, start_y - 2)
+                    (start_x, start_y - 2),
                 ]
                 self.direction = Direction.DOWN
             break
@@ -108,10 +108,12 @@ class Environment:
             pos = (x, y)
 
             # Check if position is empty
-            if (pos not in self.snake and
-                pos not in self.green_apples and
-                pos != self.red_apple):
-                if apple_type == 'green':
+            if (
+                pos not in self.snake
+                and pos not in self.green_apples
+                and pos != self.red_apple
+            ):
+                if apple_type == "green":
                     self.green_apples.append(pos)
                 else:
                     self.red_apple = pos
@@ -127,40 +129,45 @@ class Environment:
 
         # Get vision in all 4 directions (for display)
         vision = {
-            'up': self._get_vision_line(head_x, head_y, 0, -1),
-            'down': self._get_vision_line(head_x, head_y, 0, 1),
-            'left': self._get_vision_line(head_x, head_y, -1, 0),
-            'right': self._get_vision_line(head_x, head_y, 1, 0)
+            "up": self._get_vision_line(head_x, head_y, 0, -1),
+            "down": self._get_vision_line(head_x, head_y, 0, 1),
+            "left": self._get_vision_line(head_x, head_y, -1, 0),
+            "right": self._get_vision_line(head_x, head_y, 1, 0),
         }
 
         # Simplified features for learning
-        vision['features'] = self._get_simplified_features()
+        vision["features"] = self._get_simplified_features()
 
         return vision
 
     def _get_simplified_features(self):
         """Get simplified state features for fast Q-learning
 
-        Uses binary danger detection (1 step ahead) and compass apple direction.
+        Uses binary danger detection (1 step ahead) and compass apple direction
         Creates small state space (~512 states) for rapid learning.
 
         Returns:
-            tuple: State features (danger_up, danger_right, danger_down, danger_left,
-                   apple_direction, current_direction)
+            tuple: State features
+                (danger_up, danger_right,
+                danger_down, danger_left,
+                apple_direction, current_direction)
         """
         head_x, head_y = self.snake[0]
         features = []
 
         # Binary danger detection (1 step ahead in 4 directions)
-        for dx, dy in [(0, -1), (1, 0), (0, 1), (-1, 0)]:  # Up, Right, Down, Left
+        for dx, dy in [
+                (0, -1), (1, 0), (0, 1), (-1, 0)]:  # Up, Right, Down, Left
             next_x = head_x + dx
             next_y = head_y + dy
 
             # Check if this direction leads to immediate danger
             is_danger = (
-                next_x < 0 or next_x >= self.board_size or
-                next_y < 0 or next_y >= self.board_size or
-                (next_x, next_y) in self.snake
+                next_x < 0
+                or next_x >= self.board_size
+                or next_y < 0
+                or next_y >= self.board_size
+                or (next_x, next_y) in self.snake
             )
             features.append(1 if is_danger else 0)
 
@@ -262,7 +269,7 @@ class Environment:
         head_x, head_y = self.snake[0]
 
         # Find nearest apple
-        min_dist = float('inf')
+        min_dist = float("inf")
         nearest = None
         for apple in apples:
             dist = abs(apple[0] - head_x) + abs(apple[1] - head_y)
@@ -305,7 +312,7 @@ class Environment:
             apples: List of apple positions
 
         Returns:
-            list: [up, right, down, left] - 1 if apple in that direction, 0 otherwise
+            list: [up, right, down, left] - 1 if apple in direction, 0 othrwise
         """
         if not apples:
             return [0, 0, 0, 0]
@@ -313,7 +320,7 @@ class Environment:
         head_x, head_y = self.snake[0]
 
         # Find nearest apple
-        min_dist = float('inf')
+        min_dist = float("inf")
         nearest = None
         for apple in apples:
             dist = abs(apple[0] - head_x) + abs(apple[1] - head_y)
@@ -373,7 +380,7 @@ class Environment:
         # Add wall at the end
         vision.append(CellType.WALL.value)
 
-        return ''.join(vision)
+        return "".join(vision)
 
     def step(self, action):
         """Take a step in the environment
@@ -392,8 +399,7 @@ class Environment:
         # Store old position for reward shaping
         old_head = self.snake[0]
         old_distance = self._get_min_distance_to_apples(
-            old_head, self.green_apples
-        )
+            old_head, self.green_apples)
 
         # Update direction (prevent 180-degree turns)
         if not self._is_opposite_direction(action):
@@ -405,8 +411,12 @@ class Environment:
         new_head = (head_x + dx, head_y + dy)
 
         # Check for wall collision
-        if (new_head[0] < 0 or new_head[0] >= self.board_size or
-            new_head[1] < 0 or new_head[1] >= self.board_size):
+        if (
+            new_head[0] < 0
+            or new_head[0] >= self.board_size
+            or new_head[1] < 0
+            or new_head[1] >= self.board_size
+        ):
             self.game_over = True
             return self.get_state(), self.DEATH_REWARD, True
 
@@ -427,8 +437,7 @@ class Environment:
 
         # Reward shaping: stronger guidance towards green apples
         new_distance = self._get_min_distance_to_apples(
-            new_head, self.green_apples
-        )
+            new_head, self.green_apples)
         if new_distance < old_distance:
             reward += self.MOVE_CLOSER_BONUS
         elif new_distance > old_distance:
@@ -437,14 +446,14 @@ class Environment:
         # Check for green apple
         if new_head in self.green_apples:
             self.green_apples.remove(new_head)
-            self._place_apple('green')
+            self._place_apple("green")
             reward = self.GREEN_APPLE_REWARD
             if len(self.snake) > self.max_length:
                 self.max_length = len(self.snake)
         # Check for red apple
         elif new_head == self.red_apple:
             self.red_apple = None
-            self._place_apple('red')
+            self._place_apple("red")
             reward = self.RED_APPLE_PENALTY
             # Remove tail twice (once for move, once for penalty)
             self.snake.pop()
@@ -473,7 +482,7 @@ class Environment:
             Direction.UP: Direction.DOWN,
             Direction.DOWN: Direction.UP,
             Direction.LEFT: Direction.RIGHT,
-            Direction.RIGHT: Direction.LEFT
+            Direction.RIGHT: Direction.LEFT,
         }
         return opposites[self.direction] == new_direction
 
@@ -490,7 +499,7 @@ class Environment:
             Direction.UP: (0, -1),
             Direction.DOWN: (0, 1),
             Direction.LEFT: (-1, 0),
-            Direction.RIGHT: (1, 0)
+            Direction.RIGHT: (1, 0),
         }
         return deltas[direction]
 
@@ -507,7 +516,7 @@ class Environment:
         if not apples:
             return self.board_size * 2
 
-        min_dist = float('inf')
+        min_dist = float("inf")
         for apple in apples:
             dist = abs(apple[0] - position[0]) + abs(apple[1] - position[1])
             if dist < min_dist:
@@ -522,11 +531,11 @@ class Environment:
             dict: Contains snake, apples, and board info
         """
         return {
-            'snake': self.snake.copy(),
-            'green_apples': self.green_apples.copy(),
-            'red_apple': self.red_apple,
-            'board_size': self.board_size,
-            'length': len(self.snake),
-            'max_length': self.max_length,
-            'steps': self.steps
+            "snake": self.snake.copy(),
+            "green_apples": self.green_apples.copy(),
+            "red_apple": self.red_apple,
+            "board_size": self.board_size,
+            "length": len(self.snake),
+            "max_length": self.max_length,
+            "steps": self.steps,
         }

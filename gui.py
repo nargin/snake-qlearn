@@ -1,5 +1,4 @@
 import pygame
-import sys
 import os
 import subprocess
 
@@ -19,7 +18,16 @@ HOVER_COLOR = (100, 149, 237)
 
 class Button:
     """Simple button class"""
-    def __init__(self, x, y, width, height, text, color=BLUE, hover_color=HOVER_COLOR):
+
+    def __init__(
+            self,
+            x,
+            y,
+            width,
+            height,
+            text,
+            color=BLUE,
+            hover_color=HOVER_COLOR):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.color = color
@@ -46,7 +54,8 @@ class Button:
 
 class InputBox:
     """Text input box"""
-    def __init__(self, x, y, width, height, default_text=''):
+
+    def __init__(self, x, y, width, height, default_text=""):
         self.rect = pygame.Rect(x, y, width, height)
         self.color = GRAY
         self.text = default_text
@@ -81,6 +90,7 @@ class InputBox:
 
 class Menu:
     """Main menu class"""
+
     def __init__(self):
         self.init_pygame()
         self.running = True
@@ -128,7 +138,7 @@ class Menu:
         buttons = [
             Button(250, 200, 300, 80, "Train", color=GREEN),
             Button(250, 300, 300, 80, "Select Model", color=BLUE),
-            Button(250, 400, 300, 80, "Exit", color=RED)
+            Button(250, 400, 300, 80, "Exit", color=RED),
         ]
 
         while self.running and self.current_screen == "main":
@@ -176,8 +186,15 @@ class Menu:
         decay_input = InputBox(550, 255, 150, 35, "0.999")
         min_eps_input = InputBox(550, 300, 150, 35, "0.05")
 
-        all_inputs = [sessions_input, name_input, lr_input, gamma_input,
-                      epsilon_input, decay_input, min_eps_input]
+        all_inputs = [
+            sessions_input,
+            name_input,
+            lr_input,
+            gamma_input,
+            epsilon_input,
+            decay_input,
+            min_eps_input,
+        ]
 
         start_button = Button(200, 460, 400, 60, "Start Training", color=GREEN)
         back_button = Button(200, 530, 400, 60, "Back", color=GRAY)
@@ -207,7 +224,9 @@ class Menu:
             self.screen.blit(label7, (420, 305))
 
             # Info text
-            info = self.small_font.render("Leave default for standard Q-learning", True, DARK_GRAY)
+            info = self.small_font.render(
+                "Leave default for standard Q-learning", True, DARK_GRAY
+            )
             self.screen.blit(info, (200, 360))
 
             for event in pygame.event.get():
@@ -225,11 +244,11 @@ class Menu:
 
                         # Get parameters
                         params = {
-                            'lr': lr_input.text or "0.2",
-                            'gamma': gamma_input.text or "0.9",
-                            'epsilon': epsilon_input.text or "1.0",
-                            'decay': decay_input.text or "0.999",
-                            'min_eps': min_eps_input.text or "0.05"
+                            "lr": lr_input.text or "0.2",
+                            "gamma": gamma_input.text or "0.9",
+                            "epsilon": epsilon_input.text or "1.0",
+                            "decay": decay_input.text or "0.999",
+                            "min_eps": min_eps_input.text or "0.05",
                         }
 
                         self.run_training(sessions, name, params)
@@ -275,7 +294,8 @@ class Menu:
             mouse_pos = pygame.mouse.get_pos()
 
             # Calculate pagination
-            total_pages = (len(models) + models_per_page - 1) // models_per_page
+            total_pages = (
+                len(models) + models_per_page - 1) // models_per_page
             start_idx = page * models_per_page
             end_idx = min(start_idx + models_per_page, len(models))
             current_models = models[start_idx:end_idx]
@@ -296,7 +316,9 @@ class Menu:
             self.draw_title("SELECT MODEL", 40)
 
             # Show page info
-            page_text = self.small_font.render(f"Page {page + 1} / {total_pages}", True, BLACK)
+            page_text = self.small_font.render(
+                f"Page {page + 1} / {total_pages}", True, BLACK
+            )
             self.screen.blit(page_text, (340, 100))
 
             for event in pygame.event.get():
@@ -316,7 +338,8 @@ class Menu:
                     # Navigation
                     if prev_button.is_clicked(mouse_pos) and page > 0:
                         page -= 1
-                    if next_button.is_clicked(mouse_pos) and page < total_pages - 1:
+                    if next_button.is_clicked(
+                            mouse_pos) and page < total_pages - 1:
                         page += 1
                     if back_button.is_clicked(mouse_pos):
                         self.current_screen = "main"
@@ -393,7 +416,10 @@ class Menu:
             self.draw_background()
 
             text = self.button_font.render(message, True, BLACK)
-            text_rect = text.get_rect(center=(self.width // 2, self.height // 2))
+            text_rect = text.get_rect(
+                center=(
+                    self.width // 2,
+                    self.height // 2))
             self.screen.blit(text, text_rect)
 
             for event in pygame.event.get():
@@ -406,26 +432,35 @@ class Menu:
 
     def list_models(self):
         """List available model files"""
-        models_dir = 'models'
+        models_dir = "models"
         if not os.path.exists(models_dir):
             os.makedirs(models_dir)
             return []
 
-        models = [f for f in os.listdir(models_dir) if f.endswith('.pkl')]
+        models = [f for f in os.listdir(models_dir) if f.endswith(".pkl")]
         return sorted(models)
 
     def run_training(self, sessions, name, params=None):
         """Run training in subprocess with optional parameters"""
         pygame.quit()
-        cmd = ["python3", "snake.py", "-sessions", sessions, "-save", f"{name}.pkl", "-visual", "off"]
+        cmd = [
+            "python3",
+            "snake.py",
+            "-sessions",
+            sessions,
+            "-save",
+            f"{name}.pkl",
+            "-visual",
+            "off",
+        ]
 
         # Add optional parameters if provided
         if params:
-            cmd.extend(["-lr", params['lr']])
-            cmd.extend(["-gamma", params['gamma']])
-            cmd.extend(["-epsilon", params['epsilon']])
-            cmd.extend(["-epsilon_decay", params['decay']])
-            cmd.extend(["-epsilon_min", params['min_eps']])
+            cmd.extend(["-lr", params["lr"]])
+            cmd.extend(["-gamma", params["gamma"]])
+            cmd.extend(["-epsilon", params["epsilon"]])
+            cmd.extend(["-epsilon_decay", params["decay"]])
+            cmd.extend(["-epsilon_min", params["min_eps"]])
 
         try:
             subprocess.run(cmd)
@@ -438,7 +473,17 @@ class Menu:
     def run_evaluation(self, model_name):
         """Run model evaluation"""
         pygame.quit()
-        cmd = ["python3", "snake.py", "-load", model_name, "-sessions", "5", "-dontlearn", "-visual", "off"]
+        cmd = [
+            "python3",
+            "snake.py",
+            "-load",
+            model_name,
+            "-sessions",
+            "5",
+            "-dontlearn",
+            "-visual",
+            "off",
+        ]
         try:
             subprocess.run(cmd)
         except Exception as e:
@@ -450,8 +495,19 @@ class Menu:
     def run_watch(self, model_name):
         """Watch model play with visualization"""
         pygame.quit()
-        cmd = ["python3", "snake.py", "-load", model_name, "-sessions", "3",
-               "-dontlearn", "-visual", "on", "-speed", "medium"]
+        cmd = [
+            "python3",
+            "snake.py",
+            "-load",
+            model_name,
+            "-sessions",
+            "3",
+            "-dontlearn",
+            "-visual",
+            "on",
+            "-speed",
+            "medium",
+        ]
         try:
             subprocess.run(cmd)
         except Exception as e:
@@ -478,5 +534,5 @@ def main():
         pygame.quit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
